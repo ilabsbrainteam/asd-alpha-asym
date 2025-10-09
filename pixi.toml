@@ -1,0 +1,14 @@
+[workspace]
+authors = ["Daniel McCloy <dan@mccloy.info>"]
+channels = ["conda-forge"]
+name = "asd-alpha-async"
+platforms = ["linux-64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]
+mne = ">=1.10.1,<2"
+mne-bids = ">=0.17.0,<0.18"
+mne-bids-pipeline = ">=1.9.0,<2"
+ipython = ">=9.6.0,<10"
