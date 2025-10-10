@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /usr/bin/env bash
 set -euf -o pipefail
 
 if [ $# -lt 2 ]
@@ -27,10 +27,10 @@ case "$2" in
         STEPS="$2"
         ;;
     pre)
-        STEPS=init,preprocessing/_01_data_quality,preprocessing/_02_head_pos,preprocessing/_03_maxfilter,preprocessing/_04_frequency_filter,preprocessing/_05_regress_artifact,preprocessing/_06b_run_ssp,preprocessing/_07_make_epochs
+        STEPS=init,preprocessing/_01_data_quality,preprocessing/_02_head_pos,preprocessing/_03_maxfilter,preprocessing/_04_frequency_filter,preprocessing/_05_regress_artifact,preprocessing/_06a1_fit_ica,preprocessing/_06a2_find_ica_artifacts,preprocessing/_06b_run_ssp,preprocessing/_07_make_epochs
         ;;
     post)
-        STEPS=preprocessing/_08b_apply_ssp,preprocessing/_09_ptp_reject,sensor,source
+        STEPS=preprocessing/_08a_apply_ica,preprocessing/_08b_apply_ssp,preprocessing/_09_ptp_reject,sensor,source
         ;;
     all)
         STEPS=init,preprocessing,sensor
@@ -41,4 +41,4 @@ case "$2" in
         ;;
 esac
 
-mne_bids_pipeline --config "alpha_async_pipeline_config.py" --task=$1 --steps=$STEPS "${@:3}"
+mne_bids_pipeline --config "alpha_asym_pipeline_config.py" --task="rest${1^}" --steps=$STEPS "${@:3}"
