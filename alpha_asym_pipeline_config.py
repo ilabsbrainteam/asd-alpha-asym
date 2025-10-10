@@ -1134,7 +1134,7 @@ baseline: tuple[float | None, float | None] | None = None  # TODO (None, None)?
 #     ```
 # """  # noqa: E501
 
-# spatial_filter: Literal["ssp", "ica"] | None = None
+spatial_filter: Literal["ssp", "ica"] | None = "ica"
 # """
 # Whether to use a spatial filter to detect and remove artifacts. The BIDS
 # Pipeline offers the use of signal-space projection (SSP) and independent
@@ -1246,7 +1246,7 @@ baseline: tuple[float | None, float | None] | None = None  # TODO (None, None)?
 # is not reliable.
 # """
 
-# ica_reject: dict[str, float] | Literal["autoreject_local"] | None = None
+ica_reject: dict[str, float] | Literal["autoreject_local"] | None = "autoreject_local"
 # """
 # Peak-to-peak amplitude limits to exclude epochs from ICA fitting. This allows you to
 # remove strong transient artifacts from the epochs used for fitting ICA, which could
@@ -1304,7 +1304,7 @@ baseline: tuple[float | None, float | None] | None = None  # TODO (None, None)?
 # algorithm (but may converge in less time).
 # """
 
-# ica_l_freq: float | None = 1.0
+ica_l_freq: float | None = None  # already HP filtering at 1
 # """
 # The cutoff frequency of the high-pass filter to apply before running ICA.
 # Using a relatively high cutoff like 1 Hz will remove slow drifts from the
@@ -1371,13 +1371,13 @@ baseline: tuple[float | None, float | None] | None = None  # TODO (None, None)?
 # `1` or `None` to not perform any decimation.
 # """
 
-# ica_ecg_threshold: float = 0.1
+# ica_ecg_threshold: float = 0.1  # TODO may want to turn this knob
 # """
 # The cross-trial phase statistics (CTPS) threshold parameter used for detecting
 # ECG-related ICs.
 # """
 
-# ica_eog_threshold: float = 3.0
+# ica_eog_threshold: float = 3.0  # TODO may want to turn this knob
 # """
 # The threshold to use during automated EOG classification. Lower values mean
 # that more ICs will be identified as EOG-related. If too low, the
@@ -1392,9 +1392,9 @@ baseline: tuple[float | None, float | None] | None = None  # TODO (None, None)?
 #     You can do a quick average of blink data and check what the amplitude looks
 #     like.
 
-# reject: dict[str, float] | Literal["autoreject_global", "autoreject_local"] | None = (
-#     None
-# )
+reject: dict[str, float] | Literal["autoreject_global", "autoreject_local"] | None = (
+    "autoreject_local"
+)
 # """
 # Peak-to-peak amplitude limits to mark epochs as bad. This allows you to remove
 # epochs with strong transient artifacts.
