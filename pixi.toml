@@ -9,6 +9,8 @@ version = "0.1.0"
 
 [dependencies]
 mne = ">=1.10.1,<2"
-mne-bids = ">=0.17.0,<0.18"
-mne-bids-pipeline = ">=1.9.0,<2"
 ipython = ">=9.6.0,<10"
+
+[pypi-dependencies]
+mne-bids-pipeline = { git = "https://github.com/mne-tools/mne-bids-pipeline.git", rev = "d24a064d22109609005b7fd0d15d116b776d2be4" }
+mne-bids = { git = "https://github.com/mne-tools/mne-bids.git", rev = "941a12cf7948d8b3d89c517278e6786739e82653" }
