@@ -1,7 +1,7 @@
 [workspace]
 authors = ["Daniel McCloy <dan@mccloy.info>"]
 channels = ["conda-forge"]
-name = "asd-alpha-async"
+name = "asd-alpha-asym"
 platforms = ["linux-64"]
 version = "0.1.0"
 
