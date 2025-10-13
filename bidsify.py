@@ -88,11 +88,13 @@ for data_folder in orig_data.iterdir():
             ch_types.update(HR="ecg")
         if "GSR" in raw.info["ch_names"]:
             ch_types.update(GSR="bio")
+        # set Fp1/2 as EOG channels if subjs don't have EOG
+        if "eog" not in raw:
+            ch_types.update(Fp1="eog", Fp2="eog")
         raw.set_channel_types(ch_types, on_unit_change="ignore")
         raw.pick(["eeg", "eog", "ecg", "bio"])  # TODO should we keep other channels?
-        # TODO drop events?
-        # raw.annotations = None
-        # TODO set FP1/FP2 as EOG channels if subjs don't have EOG
+        # drop events
+        raw.set_annotations(None)
         bids_path.update(task=f"rest{task.capitalize()}")
         write_raw_bids(
             raw=raw,
