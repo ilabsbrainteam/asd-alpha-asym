@@ -30,7 +30,7 @@ case "$2" in
         STEPS=init,preprocessing/_01_data_quality,preprocessing/_02_head_pos,preprocessing/_03_maxfilter,preprocessing/_04_frequency_filter,preprocessing/_05_regress_artifact,preprocessing/_06a1_fit_ica,preprocessing/_06a2_find_ica_artifacts,preprocessing/_06b_run_ssp,preprocessing/_07_make_epochs
         ;;
     post)
-        STEPS=preprocessing/_08a_apply_ica,preprocessing/_08b_apply_ssp,preprocessing/_09_ptp_reject,sensor,source
+        STEPS=preprocessing/_08a_apply_ica,preprocessing/_08b_apply_ssp,preprocessing/_09_ptp_reject,sensor
         ;;
     all)
         STEPS=init,preprocessing,sensor
