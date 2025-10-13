@@ -145,7 +145,12 @@ The BIDS `recording` entity.
 The BIDS `space` entity.
 """
 
-# subjects: Sequence[str] | Literal["all"] = "all"
+# AVAILABLE SUBJECTS
+# caregiver: "all"
+# screen: ["001", "002", "003", "004", "008"]
+# staff: ["001", "003", "004", "008"]
+
+subjects: Sequence[str] | Literal["all"] = "all"
 """
 Subjects to analyze. If `'all'`, include all subjects. To only
 include a subset of subjects, pass a list of their identifiers. Even
