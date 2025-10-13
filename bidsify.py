@@ -38,13 +38,6 @@ filterwarnings(
     category=RuntimeWarning,
     module="mne"
 )
-# ignore mark_channels behavior change warning (new behavior is what we want)
-filterwarnings(
-    action="ignore",
-    message=r"In version 0.17, the behavior of `mark_channels\(..., ch_names=\[\]\)`",
-    category=FutureWarning,
-    module="mne_bids"
-)
 
 # path stuff
 root = Path(".").resolve()
@@ -115,11 +108,12 @@ for data_folder in orig_data.iterdir():
             assert prebads[subj][task] is not None, (
                 f"bad channels not yet marked in {raw_file}"
             )
-            mark_channels(
-                bids_path=bids_path,
-                ch_names=prebads[subj][task],
-                status="bad",
-                descriptions="prebad",
-            )
+            if prebads[subj][task]:
+                mark_channels(
+                    bids_path=bids_path,
+                    ch_names=prebads[subj][task],
+                    status="bad",
+                    descriptions="prebad",
+                )
         # print progress message to terminal
         print(f"{subj} {task: >10} completed")
