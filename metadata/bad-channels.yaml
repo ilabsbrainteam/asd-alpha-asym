@@ -6,8 +6,8 @@
 #     F3/4, C3/4, P3/4, T5/6
 
 '001':
-  caregiver: []  # O1, O2, Oz, P8
-  screen: []  # O1, O2, Oz, **P4**, P7
+  caregiver: [O1, O2, Oz, P8]  # O1, O2, Oz, P8
+  screen: [O1, O2, Oz, P7]  # O1, O2, Oz, **P4**, P7
   staff: []
 '002':
   caregiver: []
@@ -22,10 +22,10 @@
   screen: [C3, C4, FC6, Fp1, Fz, P3]
   staff: [C3, C4, FC1, FC6, Fp1, Fz, P3]
 '005':
-  caregiver: [TP9]  # F7, FT9, Fp1, O1, O2, Oz, Pz
+  caregiver: [F7, FT9, Fp1, O1, O2, Oz, Pz, TP9]  # F7, FT9, Fp1, O1, O2, Oz, Pz
   screen: null
   staff: null
 008:
-  caregiver: []  # P7, T8
+  caregiver: [P7, T8]  # P7, T8
   screen: []
   staff: []
