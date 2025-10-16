@@ -1482,7 +1482,7 @@ it is to run but the less data you have to compute a good ICA. Set to
 `1` or `None` to not perform any decimation.
 """
 
-# ica_ecg_threshold: float = 0.1
+ica_ecg_threshold: float = 0.9  # effectively disable ECG component marking
 """
 The cross-trial phase statistics (CTPS) threshold parameter used for detecting
 ECG-related ICs.
@@ -2383,7 +2383,7 @@ the joblib.Memory class for more information."""
 #
 # These options control parallel processing (e.g., multiple subjects at once),
 
-# n_jobs: int = 1
+n_jobs: int = 6
 """
 Specifies how many subjects you want to process in parallel. If `1`, disables
 parallel processing.
