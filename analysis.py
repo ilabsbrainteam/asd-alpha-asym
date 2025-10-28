@@ -6,6 +6,7 @@ import mne_bids
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import seaborn.objects as so
 
 # path stuff
 root = Path(".").resolve()
@@ -37,19 +38,122 @@ subjs = mne_bids.get_entity_vals(deriv_root, "subject")
 tasks = mne_bids.get_entity_vals(deriv_root, "task")
 asd_subjs = ("001", "002")
 
+# compute the spectra
+spectra = dict()
+for bp in bidspaths:
+    raw = mne.io.read_raw_fif(bp.fpath, verbose=False)
+    spec = raw.compute_psd(fmin=1, fmax=30, picks=roi_chs, verbose=False)
+    spectra[(bp.subject, bp.task)] = spec
+# aggregate in prep for stats
+spectra_df = pd.DataFrame()
+for (subj, task), spec in spectra.items():
+    df = spec.to_data_frame(picks=list(set(roi_chs) - set(spec.info["bads"])))
+    df[["subj", "task"]] = subj, task[4:]
+    df["group"] = "ASD" if subj in asd_subjs else "TD"
+    spectra_df = pd.concat((spectra_df, df))
+# calculate left-minus-right asymmetry
+roi_order = list()
+for roi, (left, right) in rois.items():
+    key = f"{roi}\n({left}-{right})"
+    spectra_df[key] = spectra_df[left].sub(spectra_df[right])
+    roi_order.append(key)
+# drop individual electrode columns
+spectra_df.drop(columns=roi_chs, inplace=True)
+# restrict to alpha band & aggregate within-band power
+alpha_power = spectra_df.loc[(8 <= spectra_df["freq"]) & (spectra_df["freq"] <= 12)]
+alpha_power = (
+    alpha_power.groupby(by=["subj", "task", "group"]).agg("mean").drop(columns="freq")
+)
+# in case we want only complete cases:
+alpha_power_complete = alpha_power.dropna(axis=0, how="any")
+
+# prepare for summary plot
+var_name = "ROI"
+value_name = "α-power asymmetry\n(left minus right; μV²)"
+task_order = ("Caregiver", "Staff", "Screen")
+group_order = ("TD", "ASD")
+
+# convert to longform
+alpha_power_long = pd.melt(
+    alpha_power,
+    ignore_index=False,
+    var_name=var_name,
+    value_name=value_name,
+).reset_index()
+alpha_power_long[value_name] *= 1e12  # convert V² to μV² for nicer plot
+# force particular order on categorical vars
+alpha_power_long["task"] = pd.Categorical(
+    alpha_power_long["task"], categories=task_order, ordered=True
+)
+alpha_power_long["group"] = pd.Categorical(
+    alpha_power_long["group"], categories=group_order, ordered=True
+)
+alpha_power_long.sort_values(
+    by=["subj", "ROI", "task"], inplace=True, ignore_index=True
+)
+# complete cases: subj+ROI combo has non-NA data for all 3 tasks
+complete = alpha_power_long.groupby(["subj", "ROI"]).filter(
+    lambda g: (g[value_name].count() == len(task_order)) & ~g[value_name].isna().any()
+)
+
+for fname, _df in {"-complete-cases": complete, "": alpha_power_long}.items():
+    # facet by ROI, complete cases vs all data
+    p = (
+        so.Plot(data=_df, x="task", y=value_name, color="subj", linestyle="group")
+        .facet(col="ROI", order=roi_order)
+        .add(so.Line(pointsize=6), so.Jitter(0.2), marker="subj")
+        .theme({**sns.axes_style("whitegrid"), "grid.linestyle": ":"})
+    )
+    plotter = p.plot()
+    fig = plotter._figure
+    fig.set_size_inches(w=9, h=4)
+    _ = [ax.set_xlabel("") for ax in fig.axes]
+    fig.supxlabel("Task")
+    # fig.legends[0].parent = fig.axes[-1]
+    fig.legends[0].set_bbox_to_anchor((0.1, 0.6))
+    fig.savefig(outdir / f"asymmetry-by-ROI{fname}.pdf")
+
+    # Facet by ASD/TD
+    p = (
+        so.Plot(data=_df, x=var_name, y=value_name, color="task")
+        .facet(col="group", order=group_order)
+        .add(so.Dot(pointsize=6, alpha=0.5), so.Dodge(), so.Jitter(0.2), marker="subj")
+        .add(so.Dash(), so.Agg(), so.Dodge())  # horz line: mean
+        .add(
+            so.Range(linewidth=2.5), so.Est(errorbar="se"), so.Dodge()
+        )  # vert line: ±1 se
+        .scale(color=so.Nominal("colorblind", order=task_order))
+        .theme(
+            {
+                **sns.axes_style("whitegrid"),
+                "grid.linestyle": ":",
+                "legend.facecolor": "none",
+            }
+        )
+    )
+    plotter = p.plot()
+    fig = plotter._figure
+    fig.set_size_inches(w=10, h=4)
+    _ = [ax.set_xlabel("") for ax in fig.axes]
+    fig.supxlabel("ROI")
+    fig.legends[0].parent = fig.axes[-1]
+    fig.legends[0].set_bbox_to_anchor((0.65, 0.5 + (0.05 if fname else 0)))
+    fig.savefig(outdir / f"asymmetry-by-group{fname}.pdf")
+
+# subj×task spectrum plots
 fig, axs = plt.subplots(
     len(tasks), len(subjs), sharex=True, sharey=True, layout="constrained"
 )
 
-spectra = dict()
+ylim = (
+    min([(10 * np.log10(s.data * 1e12)).min() for s in spectra.values()]),
+    max([(10 * np.log10(s.data * 1e12)).max() for s in spectra.values()]),
+)
 
 for bp in bidspaths:
-    raw = mne.io.read_raw_fif(bp.fpath)
-    # plot from 0-30 Hz (delta, theta, alpha, beta)
-    spec = raw.compute_psd(fmin=1, fmax=30, picks=roi_chs)
-    spectra[(bp.subject, bp.task)] = spec
     # make the plot
     ax = axs[tasks.index(bp.task), subjs.index(bp.subject)]
+    spec = spectra[(bp.subject, bp.task)]
     spec.plot(axes=ax)
     # shade the non-alpha bands
     for sides in (1, 8), (12, 30):
@@ -64,6 +168,7 @@ for rix, row in enumerate(axs):
         ylabel = "" if cix > 0 else f"{tasks[rix][4:]}\n{ax.get_ylabel()}"
         ax.set_title(title)
         ax.set_ylabel(ylabel)
+        ax.set_ylim(ylim)
         if not len(ax.lines):
             ax.set_axis_off()
         else:
@@ -82,46 +187,3 @@ for rix, row in enumerate(axs):
 fig.set_size_inches(w=12, h=6)
 fig.savefig(outdir / "spectra.pdf")
 plt.close(fig)
-
-# aggregate in prep for stats
-spectra_df = pd.DataFrame()
-for (subj, task), spec in spectra.items():
-    df = spec.to_data_frame(picks=list(set(roi_chs) - set(spec.info["bads"])))
-    df[["subj", "task", "asd"]] = subj, task[4:], subj in asd_subjs
-    spectra_df = pd.concat((spectra_df, df))
-# calculate left-minus-right asymmetry
-for roi, chs in rois.items():
-    spectra_df[f"{roi} ({chs[0]}-{chs[1]})"] = spectra_df[chs[0]].sub(
-        spectra_df[chs[1]]
-    )
-# drop individual electrode columns
-spectra_df.drop(columns=roi_chs, inplace=True)
-# restrict to alpha band & aggregate within-band power
-alpha_power = spectra_df.loc[(8 <= spectra_df["freq"]) & (spectra_df["freq"] <= 12)]
-alpha_power = (
-    alpha_power.groupby(by=["subj", "task", "asd"]).agg("mean").drop(columns="freq")
-)
-
-1 / 0
-alpha_power_long = pd.melt(
-    alpha_power,
-    ignore_index=False,
-    var_name="ROI (left minus right)",
-    value_name="Power (μV²)",
-).reset_index()
-
-g = sns.catplot(
-    data=alpha_power_long,
-    x="ROI (left minus right)",
-    y="Power (μV²)",
-    hue="task",
-    col="asd",
-    dodge=True,
-    kind="point",
-    linestyle="",
-    marker="_",
-    markersize=10,
-    order=alpha_power.columns,
-)
-g.map(sns.stripplot, dodge=True, size=20)  # TODO this doesn't work
-g.figure.show()
