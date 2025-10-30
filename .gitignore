@@ -1,3 +1,7 @@
+# standard python stuff
+__pycache__/
 # pixi environments
 .pixi/*
 !.pixi/config.toml
+# anonymization info
+metadata/daysback.yaml
