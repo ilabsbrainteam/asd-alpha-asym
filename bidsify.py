@@ -30,13 +30,13 @@ filterwarnings(
     action="ignore",
     message="No coordinate information found for channels",
     category=RuntimeWarning,
-    module="mne"
+    module="mne",
 )
 filterwarnings(
     action="ignore",
     message="Not setting positions of",
     category=RuntimeWarning,
-    module="mne"
+    module="mne",
 )
 
 # path stuff
@@ -68,7 +68,7 @@ for data_folder in orig_data.iterdir():
     result = pattern.match(data_folder.name)
     asd = result.group("grp") is not None
     # BIDS requires subj to be a string, but cast to int as a failsafe first
-    subj = f"{int(result.group("subjnum")):03}"
+    subj = f"{int(result.group('subjnum')):03}"
     bids_path.update(subject=subj)
 
     # classify the raw files by task, and write them to the BIDS folder
