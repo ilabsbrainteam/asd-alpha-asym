@@ -18,7 +18,7 @@ from mne_bids_pipeline.typing import (
 # %%
 # # General settings
 
-bids_root: PathLike | None = "bids-data"
+bids_root: PathLike | None = "/data/asd-alpha-asym/bids-data"
 """
 Specify the BIDS root directory. Pass an empty string or ```None` to use
 the value specified in the `BIDS_ROOT` environment variable instead.

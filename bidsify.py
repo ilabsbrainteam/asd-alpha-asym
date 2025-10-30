@@ -40,7 +40,7 @@ filterwarnings(
 )
 
 # path stuff
-root = Path(".").resolve()
+root = Path("/data/asd-alpha-asym").resolve()
 orig_data = root / "orig-data"
 bids_root = root / "bids-data"
 metadata = root / "metadata"

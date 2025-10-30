@@ -9,7 +9,7 @@ import seaborn as sns
 import seaborn.objects as so
 
 # path stuff
-root = Path(".").resolve()
+root = Path("/data/asd-alpha-asym")
 deriv_root = root / "bids-data" / "derivatives" / "mne-bids-pipeline"
 outdir = root / "qc"
 
